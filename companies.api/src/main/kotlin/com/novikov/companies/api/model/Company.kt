@@ -1,5 +1,6 @@
 package com.novikov.companies.api.model
 
+import com.fasterxml.jackson.annotation.JsonManagedReference
 import jakarta.persistence.*
 
 @Entity
@@ -10,5 +11,5 @@ data class Company(@Id @GeneratedValue(strategy = GenerationType.IDENTITY) var i
                    var contactPhone: String,
                    var email: String,
                    var siteLink: String,
-                   @OneToOne @JoinColumn(name = "address_id") val address: Address?
+                   @JsonManagedReference @OneToOne @JoinColumn(name = "address_id") var address: Address?
 )

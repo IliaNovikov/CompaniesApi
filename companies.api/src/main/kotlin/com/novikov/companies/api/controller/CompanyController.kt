@@ -2,6 +2,7 @@ package com.novikov.companies.api.controller
 
 import com.novikov.companies.api.model.Address
 import com.novikov.companies.api.model.Company
+import com.novikov.companies.api.model.CompanyRequest
 import com.novikov.companies.api.repository.AddressRepository
 import com.novikov.companies.api.repository.CompanyRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,45 +31,64 @@ class CompanyController {
         return companyRepository.findAll()
     }
 
+    @GetMapping("/{id}")
+    private fun getCompany(id: Int) : Company{
+        return companyRepository.findById(id).get()
+    }
+
     @PostMapping("/add")
     @ResponseBody
-    private fun addCompany(@RequestParam name: String,
-                           @RequestParam contactFio: String,
-                           @RequestParam contactPhone: String,
-                           @RequestParam email: String,
-                           @RequestParam siteLink: String,
-                           @RequestParam postIndex: Int,
-                           @RequestParam city: String,
-                           @RequestParam street: String,
-                           @RequestParam house: Int) : Company{
-        val address = Address(id = 0, postIndex = postIndex, city = city, street = street, house = house, company = null)
+    private fun addCompany(newCompany: CompanyRequest) : Company{
+//        val address = Address(id = 0, postIndex = postIndex, city = city, street = street, house = house, company = null)
+//        addressRepository.save(address)
+
+        val address = Address(id = 0,
+            postIndex = newCompany.postIndex,
+            city = newCompany.city,
+            street = newCompany.street,
+            house = newCompany.house,
+            company = null)
         addressRepository.save(address)
 
-        val company = Company(id = 0, name = name, contactFio = contactFio, contactPhone = contactPhone, email = email, siteLink = siteLink, address = address)
+        val company = Company(id = 0,
+            name = newCompany.name,
+            contactFio = newCompany.contactFio,
+            contactPhone = newCompany.contactPhone,
+            email = newCompany.email,
+            siteLink = newCompany.siteLink,
+            address = address)
+
         companyRepository.save(company)
+
+//        val company = Company(id = 0, name = name, contactFio = contactFio, contactPhone = contactPhone, email = email, siteLink = siteLink, address = address)
+//        companyRepository.save(company)
 
         return company
 
     }
     @PutMapping("/{id}/edit")
     @ResponseBody
-    private fun editCompany(@PathVariable id: Int,
-                            @RequestParam name: String,
-                            @RequestParam contactFio: String,
-                            @RequestParam contactPhone: String,
-                            @RequestParam email: String,
-                            @RequestParam siteLink: String) : Company{
+    private fun editCompany(@PathVariable id: Int, newCompany: CompanyRequest) : Company{
 
-        val company = companyRepository.findById(id)
-        company.get().also {
-            it.name = name
-            it.contactFio = contactFio
-            it.contactPhone = contactPhone
-            it.email = email
-            it.siteLink = siteLink
+        val company = companyRepository.findById(id).get()
+        company.also {
+            it.name = newCompany.name
+            it.contactFio = newCompany.contactFio
+            it.contactPhone = newCompany.contactPhone
+            it.email = newCompany.email
+            it.siteLink = newCompany.siteLink
         }
-        companyRepository.save(company.get())
-        return company.get()
+        companyRepository.save(company)
+
+        val address = addressRepository.findById(company.id).get()
+        address.also {
+            it.postIndex = newCompany.postIndex
+            it.city = newCompany.city
+            it.street = newCompany.street
+            it.house = newCompany.house
+        }
+        addressRepository.save(address)
+        return company
     }
 
     @DeleteMapping("/{id}/delete")
